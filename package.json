@@ -1,0 +1,23 @@
+{
+  "name": "mental-health-companion",
+  "version": "1.0.0",
+  "description": "A comprehensive mental health companion application",
+  "scripts": {
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:all": "npm run install:frontend && npm run install:backend"
+  },
+  "keywords": [
+    "mental-health",
+    "react",
+    "express",
+    "mongodb",
+    "vercel"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
