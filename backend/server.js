@@ -22,6 +22,7 @@ app.use(cors({
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
+    'https://mental-health-companion-front.vercel.app',
     'https://mental-health-companion-beige.vercel.app',
     'https://mental-health-companion-e29c.vercel.app', // Your frontend URL
     'https://*.vercel.app' // Allow all Vercel deployments
