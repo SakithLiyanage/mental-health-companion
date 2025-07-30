@@ -2,7 +2,7 @@
 // Force the correct backend URL - override any environment variables that might be wrong
 export const API_BASE_URL = 'https://mental-health-companion-nine.vercel.app';
 
-console.log('API_BASE_URL configured as:', API_BASE_URL);
+console.log('API_BASE_URL configured as:', API_BASE_URL, 'at', new Date().toISOString());
 
 // API endpoints
 export const API_ENDPOINTS = {
