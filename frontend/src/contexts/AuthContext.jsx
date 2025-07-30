@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api.js';
+import { API_ENDPOINTS } from '../config/api.js'; // Removed unused API_BASE_URL
 import { EMERGENCY_API_ENDPOINTS } from '../config/emergency-api.js';
 
 const AuthContext = createContext();

@@ -37,19 +37,13 @@ export const API_ENDPOINTS = {
   
   // Emotions
   emotions: `${FORCED_BACKEND_URL}/api/emotions`,
+  // Emotions
+  emotions: `${FORCED_BACKEND_URL}/api/emotions`,
   emotionsById: (entryId) => `${FORCED_BACKEND_URL}/api/emotions/${entryId}`,
   
   // Dashboard
   dashboardStats: `${FORCED_BACKEND_URL}/api/dashboard/stats`,
   dashboardActivities: `${FORCED_BACKEND_URL}/api/dashboard/activities`,
-  journalTest: `${API_BASE_URL}/api/journal/test`,
-  
-  // Emotions
-  emotions: `${API_BASE_URL}/api/emotions`,
-  
-  // Dashboard
-  dashboardStats: `${API_BASE_URL}/api/dashboard/stats`,
-  dashboardActivities: `${API_BASE_URL}/api/dashboard/activities`,
 };
 
 export default API_BASE_URL;

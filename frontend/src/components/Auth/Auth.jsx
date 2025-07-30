@@ -9,7 +9,7 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
-  const { login, register } = useAuth();
+  const { register } = useAuth(); // Removed unused 'login' import
 
   const [formData, setFormData] = useState({
     email: '',
@@ -210,7 +210,7 @@ const Auth = () => {
           throw new Error(errorData.message || 'Login failed');
         }
         
-        const { token, user } = await response.json();
+        const { token } = await response.json(); // Removed unused 'user' variable
         
         // Store token and redirect manually
         localStorage.setItem('token', token);
