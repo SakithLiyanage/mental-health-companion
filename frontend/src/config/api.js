@@ -1,6 +1,8 @@
 // API Configuration
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mental-health-companion-nine.vercel.app';
 
+console.log('API_BASE_URL configured as:', API_BASE_URL);
+
 // API endpoints
 export const API_ENDPOINTS = {
   // Auth

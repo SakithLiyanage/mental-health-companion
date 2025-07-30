@@ -18,7 +18,9 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3001',
-    'http://localhost:3002'
+    'http://localhost:3002',
+    'https://mental-health-companion-front.vercel.app',
+    'https://mental-health-companion-nine.vercel.app'
   ],
   credentials: true
 }));

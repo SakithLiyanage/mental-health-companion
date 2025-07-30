@@ -5,6 +5,7 @@ import { API_BASE_URL } from '../config/api.js';
 const AuthContext = createContext();
 
 const API_BASE = API_BASE_URL + '/api';
+console.log('AuthContext API_BASE configured as:', API_BASE);
 axios.defaults.baseURL = API_BASE;
 
 // Token management

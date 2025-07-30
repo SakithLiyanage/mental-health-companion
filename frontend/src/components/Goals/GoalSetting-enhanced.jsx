@@ -88,7 +88,7 @@ const GoalSetting = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/goals/analytics', {
+      const response = await fetch(API_ENDPOINTS.goalsAnalytics, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -125,7 +125,7 @@ const GoalSetting = () => {
         }
       };
 
-      const response = await fetch('http://localhost:5000/api/goals', {
+      const response = await fetch(API_ENDPOINTS.goals, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -158,7 +158,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/goals/${goalId}/log`, {
+      const response = await fetch(API_ENDPOINTS.goalsLog(goalId), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -189,7 +189,7 @@ const GoalSetting = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:5000/api/goals/${goalId}/checkin`, {
+      const response = await fetch(API_ENDPOINTS.goalsCheckin(goalId), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -220,7 +220,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/goals/${goalId}`, {
+      const response = await fetch(API_ENDPOINTS.goalsById(goalId), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
