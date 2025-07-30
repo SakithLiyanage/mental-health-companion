@@ -189,7 +189,34 @@ const Auth = () => {
     try {
       if (isLogin) {
         console.log('Attempting login with:', formData.email);
-        await login(formData.email, formData.password);
+        
+        // EMERGENCY: Bypass AuthContext and make direct API call
+        const emergencyLoginUrl = 'https://mental-health-companion-nine.vercel.app/api/auth/login';
+        console.log('🆘 EMERGENCY LOGIN - Direct API call to:', emergencyLoginUrl);
+        
+        const response = await fetch(emergencyLoginUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            email: formData.email, 
+            password: formData.password 
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+          throw new Error(errorData.message || 'Login failed');
+        }
+        
+        const { token, user } = await response.json();
+        
+        // Store token and redirect manually
+        localStorage.setItem('token', token);
+        console.log('Emergency login successful, redirecting...');
+        window.location.href = '/dashboard';
+        
       } else {
         console.log('Attempting registration with:', formData);
         await register(formData);
