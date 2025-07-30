@@ -100,6 +100,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Environment variables debug endpoint (for troubleshooting)
+app.get('/api/debug/env', (req, res) => {
+  res.json({
+    environment: process.env.NODE_ENV || 'development',
+    hasMongoUri: !!process.env.MONGODB_URI,
+    mongoUriLength: process.env.MONGODB_URI?.length || 0,
+    mongoUriPrefix: process.env.MONGODB_URI?.substring(0, 20) || 'undefined',
+    frontendUrl: process.env.FRONTEND_URL || 'undefined',
+    vercelEnv: !!process.env.VERCEL,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
