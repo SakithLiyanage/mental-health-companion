@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config/api.js';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api.js';
 
 const AuthContext = createContext();
 
 const API_BASE = API_BASE_URL + '/api';
 console.log('AuthContext API_BASE configured as:', API_BASE);
+console.log('AuthContext API_ENDPOINTS.auth:', API_ENDPOINTS.auth);
 axios.defaults.baseURL = API_BASE;
 
 // Token management
@@ -54,7 +55,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post('/auth/login', { email, password });
+      console.log('Attempting login to:', API_ENDPOINTS.auth + '/login');
+      const response = await axios.post(API_ENDPOINTS.auth + '/login', { email, password });
       const { token, user } = response.data;
       
       setToken(token);
@@ -70,9 +72,9 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       console.log('Attempting registration with data:', userData);
-      console.log('API Base URL:', API_BASE);
+      console.log('Registering to:', API_ENDPOINTS.auth + '/register');
       
-      const response = await axios.post('/auth/register', userData);
+      const response = await axios.post(API_ENDPOINTS.auth + '/register', userData);
       console.log('Registration response:', response.data);
       
       const { token, user } = response.data;
