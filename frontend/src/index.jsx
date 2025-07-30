@@ -4,6 +4,10 @@ import './index.css';
 import App from './App.jsx';
 import reportWebVitals from './reportWebVitals.js';
 
+// FORCE CACHE BUSTING - Add timestamp to ensure fresh load
+console.log('🚀 Frontend loading at:', new Date().toISOString());
+console.log('🔧 Build timestamp:', Date.now());
+
 const root = ReactDOM.createRoot(
   document.getElementById('root')
 );

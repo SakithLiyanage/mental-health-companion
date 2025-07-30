@@ -63,15 +63,30 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const loginUrl = API_ENDPOINTS.auth + '/login';
-      console.log('Attempting login to:', loginUrl);
-      const response = await apiClient.post(loginUrl, { email, password });
-      const { token, user } = response.data;
+      console.log('🔥 CRITICAL DEBUG - Attempting login to:', loginUrl);
+      console.log('🔥 API_ENDPOINTS.auth value:', API_ENDPOINTS.auth);
+      
+      // Try fetch instead of axios to completely bypass any axios configuration
+      const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+        throw new Error(errorData.message || 'Login failed');
+      }
+      
+      const { token, user } = await response.json();
       
       setToken(token);
       setUser(user);
     } catch (error) {
-      console.error('Login error details:', error.response?.data || error.message);
-      throw new Error(error.response?.data?.message || 'Login failed');
+      console.error('Login error details:', error);
+      throw new Error(error.message || 'Login failed');
     } finally {
       setLoading(false);
     }
