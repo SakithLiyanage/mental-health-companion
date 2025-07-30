@@ -128,52 +128,68 @@ app.use('*', (req, res) => {
   });
 });
 
-// MongoDB connection
+// MongoDB connection caching for serverless environments
+let cachedDb = null;
+
 const connectDB = async () => {
+  if (cachedDb) {
+    console.log('Using cached database instance');
+    return cachedDb;
+  }
+
   try {
-    // Only connect if not already connected
-    if (mongoose.connection.readyState === 0) {
-      console.log('Attempting to connect to MongoDB Atlas...');
-      console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
-      
-      const conn = await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      });
-      
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-      console.log(`📁 Database: ${conn.connection.name}`);
+    console.log('Attempting to create new database connection...');
+    // Redact password for security
+    const redactedUri = process.env.MONGODB_URI?.replace(/:([^:]+)@/, ':********@');
+    console.log('MongoDB URI used for connection:', redactedUri);
+
+    if (!process.env.MONGODB_URI) {
+      console.error('CRITICAL: MONGODB_URI is not defined.');
+      throw new Error('MONGODB_URI is not defined in environment variables.');
     }
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false, // Disable buffering to fail fast
+    });
+
+    console.log(`✅ New MongoDB Connected: ${conn.connection.host}`);
+    cachedDb = conn;
+    return conn;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     
-    if (error.message.includes('IP') || error.message.includes('whitelist')) {
-      console.error('\n🔥 SOLUTION: Add your IP to MongoDB Atlas whitelist:');
-      console.error('1. Go to https://cloud.mongodb.com');
-      console.error('2. Navigate to "Network Access"');
-      console.error('3. Click "Add IP Address"');
-      console.error('4. Add your current IP or use 0.0.0.0/0 for development');
+    if (error.name === 'MongoNetworkError' || error.message.includes('IP') || error.message.includes('whitelist')) {
+      console.error('\n🔥 SOLUTION: Add your IP to MongoDB Atlas whitelist.');
     }
     
     console.error('\n💡 Other potential fixes:');
-    console.error('- Check your MongoDB credentials');
-    console.error('- Verify your connection string');
-    console.error('- Ensure cluster is running\n');
+    console.error('- Check your MONGODB_URI in Vercel environment variables.');
+    console.error('- Ensure the database cluster is active and not paused.');
     
-    // Don't exit in serverless environment
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
+    // Throw the error to be caught by the serverless handler
+    throw error;
   }
 };
+
 
 // For Vercel serverless functions
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
-    await connectDB();
-    return app(req, res);
+    try {
+      await connectDB();
+      return app(req, res);
+    } catch (error) {
+      console.error('Failed to connect to database, sending 503 response.');
+      res.status(503).json({
+        success: false,
+        message: 'Service Unavailable: Could not connect to the database.',
+        error: error.message,
+      });
+    }
   };
 } else {
   // Start server for local development
