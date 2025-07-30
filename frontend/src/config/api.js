@@ -1,40 +1,47 @@
 // API Configuration
-// Force the correct backend URL - override any environment variables that might be wrong
-export const API_BASE_URL = 'https://mental-health-companion-nine.vercel.app';
+// CRITICAL: Force the correct backend URL - completely ignore any environment variables
+// The frontend deployment might have REACT_APP_API_URL set to the wrong backend
+const FORCED_BACKEND_URL = 'https://mental-health-companion-nine.vercel.app';
+export const API_BASE_URL = FORCED_BACKEND_URL;
 
-console.log('API_BASE_URL configured as:', API_BASE_URL, 'at', new Date().toISOString());
+console.log('=== API CONFIGURATION DEBUG ===');
+console.log('process.env.REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('FORCED_BACKEND_URL:', FORCED_BACKEND_URL);
+console.log('Final API_BASE_URL:', API_BASE_URL);
+console.log('Timestamp:', new Date().toISOString());
+console.log('===============================');
 
-// API endpoints
+// API endpoints - use forced URL to ensure no environment variable interference
 export const API_ENDPOINTS = {
   // Auth
-  auth: `${API_BASE_URL}/api/auth`,
-  authProfile: `${API_BASE_URL}/api/auth/profile`,
+  auth: `${FORCED_BACKEND_URL}/api/auth`,
+  authProfile: `${FORCED_BACKEND_URL}/api/auth/profile`,
   
   // Chat
-  chat: `${API_BASE_URL}/api/chat`,
-  chatHistory: `${API_BASE_URL}/api/chat/history`,
+  chat: `${FORCED_BACKEND_URL}/api/chat`,
+  chatHistory: `${FORCED_BACKEND_URL}/api/chat/history`,
   
   // Goals
-  goals: `${API_BASE_URL}/api/goals`,
-  goalsAnalytics: `${API_BASE_URL}/api/goals/analytics`,
-  goalsDailyProgress: `${API_BASE_URL}/api/goals/update-daily-progress`,
-  goalsLog: (goalId) => `${API_BASE_URL}/api/goals/${goalId}/log`,
-  goalsCheckin: (goalId) => `${API_BASE_URL}/api/goals/${goalId}/checkin`,
-  goalsById: (goalId) => `${API_BASE_URL}/api/goals/${goalId}`,
+  goals: `${FORCED_BACKEND_URL}/api/goals`,
+  goalsAnalytics: `${FORCED_BACKEND_URL}/api/goals/analytics`,
+  goalsDailyProgress: `${FORCED_BACKEND_URL}/api/goals/update-daily-progress`,
+  goalsLog: (goalId) => `${FORCED_BACKEND_URL}/api/goals/${goalId}/log`,
+  goalsCheckin: (goalId) => `${FORCED_BACKEND_URL}/api/goals/${goalId}/checkin`,
+  goalsById: (goalId) => `${FORCED_BACKEND_URL}/api/goals/${goalId}`,
   
   // Journal
-  journal: `${API_BASE_URL}/api/journal`,
-  journalStats: `${API_BASE_URL}/api/journal/stats/overview`,
-  journalTest: `${API_BASE_URL}/api/journal/test`,
-  journalById: (entryId) => `${API_BASE_URL}/api/journal/${entryId}`,
+  journal: `${FORCED_BACKEND_URL}/api/journal`,
+  journalStats: `${FORCED_BACKEND_URL}/api/journal/stats/overview`,
+  journalTest: `${FORCED_BACKEND_URL}/api/journal/test`,
+  journalById: (entryId) => `${FORCED_BACKEND_URL}/api/journal/${entryId}`,
   
   // Emotions
-  emotions: `${API_BASE_URL}/api/emotions`,
-  emotionsById: (entryId) => `${API_BASE_URL}/api/emotions/${entryId}`,
+  emotions: `${FORCED_BACKEND_URL}/api/emotions`,
+  emotionsById: (entryId) => `${FORCED_BACKEND_URL}/api/emotions/${entryId}`,
   
   // Dashboard
-  dashboardStats: `${API_BASE_URL}/api/dashboard/stats`,
-  dashboardActivities: `${API_BASE_URL}/api/dashboard/activities`,
+  dashboardStats: `${FORCED_BACKEND_URL}/api/dashboard/stats`,
+  dashboardActivities: `${FORCED_BACKEND_URL}/api/dashboard/activities`,
   journalTest: `${API_BASE_URL}/api/journal/test`,
   
   // Emotions
