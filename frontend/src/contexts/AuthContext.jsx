@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api.js';
+import { EMERGENCY_API_ENDPOINTS } from '../config/emergency-api.js';
 
 const AuthContext = createContext();
 
@@ -62,9 +63,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const loginUrl = API_ENDPOINTS.auth + '/login';
-      console.log('🔥 CRITICAL DEBUG - Attempting login to:', loginUrl);
-      console.log('🔥 API_ENDPOINTS.auth value:', API_ENDPOINTS.auth);
+      // Use emergency endpoints to bypass any configuration issues
+      const loginUrl = EMERGENCY_API_ENDPOINTS.login;
+      console.log('� EMERGENCY LOGIN - Attempting login to:', loginUrl);
+      console.log('� EMERGENCY_API_ENDPOINTS.login:', EMERGENCY_API_ENDPOINTS.login);
       
       // Try fetch instead of axios to completely bypass any axios configuration
       const response = await fetch(loginUrl, {
