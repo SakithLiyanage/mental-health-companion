@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_ENDPOINTS } from '../../config/api.js';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
@@ -39,7 +40,7 @@ const Profile = () => {
         if (!token) return;
 
         // Load journal stats
-        const journalResponse = await fetch('http://localhost:5000/api/journal/stats/overview', {
+        const journalResponse = await fetch(API_ENDPOINTS.journalStats, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -163,7 +164,7 @@ const Profile = () => {
       };
 
       // Update user profile on backend
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      const response = await fetch(API_ENDPOINTS.authProfile, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../../config/api.js';
 
 const GoalSetting = () => {
   const [goals, setGoals] = useState([]);
@@ -62,7 +63,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/goals', {
+      const response = await fetch(API_ENDPOINTS.goals, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

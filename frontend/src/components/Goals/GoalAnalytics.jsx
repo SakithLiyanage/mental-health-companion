@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoal } from '../../contexts/GoalContext.jsx';
+import { API_ENDPOINTS } from '../../config/api.js';
 
 const GoalAnalytics = () => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const GoalAnalytics = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:5000/api/goals/analytics?timeRange=${timeRange}`, {
+      const response = await fetch(`${API_ENDPOINTS.goalsAnalytics}?timeRange=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -39,7 +40,7 @@ const GoalAnalytics = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/goals', {
+      const response = await fetch(API_ENDPOINTS.goals, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

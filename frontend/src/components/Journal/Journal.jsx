@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGoal } from '../../contexts/GoalContext.jsx';
+import { API_ENDPOINTS } from '../../config/api.js';
 
 const Journal = () => {
   const { user } = useAuth();
@@ -59,7 +60,7 @@ const Journal = () => {
 
         // Test the API first
         try {
-          const testResponse = await fetch('http://localhost:5000/api/journal/test', {
+          const testResponse = await fetch(API_ENDPOINTS.journalTest, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -71,12 +72,12 @@ const Journal = () => {
             console.log('API test successful:', testResult);
           } else {
             console.log('API test failed:', testResponse.status);
-          }
+        }
         } catch (testError) {
           console.log('API test error:', testError);
         }
 
-        const response = await fetch('http://localhost:5000/api/journal', {
+        const response = await fetch(API_ENDPOINTS.journal, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -216,7 +217,7 @@ const Journal = () => {
 
       console.log('Sending journal entry:', newEntry); // Debug log
 
-      const response = await fetch('http://localhost:5000/api/journal', {
+      const response = await fetch(API_ENDPOINTS.journal, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -293,7 +294,7 @@ const Journal = () => {
       }
     } catch (error) {
       console.error('Error saving journal entry:', error);
-      alert('Failed to save journal entry. Check if backend server is running on http://localhost:5000');
+      alert('Failed to save journal entry. Please check your internet connection and try again.');
       
       // Save locally as fallback
       const localEntry = {
@@ -338,7 +339,7 @@ const Journal = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/journal/${entryId}`, {
+      const response = await fetch(API_ENDPOINTS.journalById(entryId), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

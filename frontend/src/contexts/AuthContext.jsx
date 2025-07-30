@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api.js';
 
-const AuthContext = createContext(undefined);
+const AuthContext = createContext();
 
-// Configure axios defaults
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-axios.defaults.baseURL = API_BASE_URL;
+const API_BASE = API_BASE_URL + '/api';
+axios.defaults.baseURL = API_BASE;
 
 // Token management
 const getToken = () => localStorage.getItem('token');
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       console.log('Attempting registration with data:', userData);
-      console.log('API Base URL:', API_BASE_URL);
+      console.log('API Base URL:', API_BASE);
       
       const response = await axios.post('/auth/register', userData);
       console.log('Registration response:', response.data);
