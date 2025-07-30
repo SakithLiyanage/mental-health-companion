@@ -174,6 +174,14 @@ router.post('/login', async (req, res) => {
   }
 
   try {
+    // Check MongoDB connection state
+    if (require('mongoose').connection.readyState !== 1) {
+      console.error('FATAL ERROR: MongoDB is not connected.');
+      return res.status(500).json({
+        message: 'Server error: Database not connected.'
+      });
+    }
+
     const { email, password } = req.body;
 
     // Validate input
