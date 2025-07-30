@@ -130,9 +130,9 @@ app.get('/api/debug/mongo', async (req, res) => {
     const testOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 2000,
-      connectTimeoutMS: 2000,
-      socketTimeoutMS: 2000,
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
+      socketTimeoutMS: 3000,
       maxPoolSize: 1,
       bufferCommands: false,
       family: 4
@@ -141,16 +141,25 @@ app.get('/api/debug/mongo', async (req, res) => {
     console.log('Attempting direct MongoDB connection...');
     const testConnection = await mongoose.createConnection(process.env.MONGODB_URI, testOptions);
     
+    console.log('Connection established, testing database access...');
+    const dbStats = await testConnection.db.stats();
     const collections = await testConnection.db.listCollections().toArray();
     
+    console.log('Closing test connection...');
     await testConnection.close();
     
     res.json({
       success: true,
-      message: 'MongoDB connection successful',
+      message: 'MongoDB connection successful from Vercel',
       host: testConnection.host,
       database: testConnection.name,
       collections: collections.length,
+      collectionNames: collections.map(c => c.name),
+      dbStats: {
+        ok: dbStats.ok,
+        collections: dbStats.collections,
+        dataSize: dbStats.dataSize
+      },
       timestamp: new Date().toISOString()
     });
     
@@ -161,6 +170,7 @@ app.get('/api/debug/mongo', async (req, res) => {
       error: error.message,
       errorName: error.name,
       errorCode: error.code,
+      stack: error.stack?.split('\n').slice(0, 3), // First 3 lines of stack
       timestamp: new Date().toISOString()
     });
   }
