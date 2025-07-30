@@ -113,6 +113,59 @@ app.get('/api/debug/env', (req, res) => {
   });
 });
 
+// MongoDB connection test endpoint
+app.get('/api/debug/mongo', async (req, res) => {
+  try {
+    console.log('🔍 Testing MongoDB connection from Vercel...');
+    
+    if (!process.env.MONGODB_URI) {
+      return res.status(500).json({
+        success: false,
+        error: 'MONGODB_URI not found',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Test connection with aggressive timeout settings
+    const testOptions = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 2000,
+      connectTimeoutMS: 2000,
+      socketTimeoutMS: 2000,
+      maxPoolSize: 1,
+      bufferCommands: false,
+      family: 4
+    };
+    
+    console.log('Attempting direct MongoDB connection...');
+    const testConnection = await mongoose.createConnection(process.env.MONGODB_URI, testOptions);
+    
+    const collections = await testConnection.db.listCollections().toArray();
+    
+    await testConnection.close();
+    
+    res.json({
+      success: true,
+      message: 'MongoDB connection successful',
+      host: testConnection.host,
+      database: testConnection.name,
+      collections: collections.length,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('MongoDB test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      errorName: error.name,
+      errorCode: error.code,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
