@@ -61,7 +61,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
     database: dbStatus,
-    mongodbUri: process.env.MONGODB_URI ? 'configured' : 'missing'
+    mongodbUri: process.env.MONGODB_URI ? 'configured' : 'missing',
+    jwtSecret: process.env.JWT_SECRET ? 'configured' : 'missing',
+    frontendUrl: process.env.FRONTEND_URL ? 'configured' : 'missing'
   });
 });
 
