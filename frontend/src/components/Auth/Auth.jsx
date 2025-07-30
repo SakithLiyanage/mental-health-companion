@@ -206,8 +206,11 @@ const Auth = () => {
         });
         
         if (!response.ok) {
+          console.error('Login failed with status:', response.status);
+          console.error('Response headers:', response.headers);
           const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-          throw new Error(errorData.message || 'Login failed');
+          console.error('Error data:', errorData);
+          throw new Error(errorData.message || 'Server error during login');
         }
         
         const { token } = await response.json(); // Removed unused 'user' variable
