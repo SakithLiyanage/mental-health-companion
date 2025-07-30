@@ -191,7 +191,7 @@ const Auth = () => {
         console.log('Attempting login with:', formData.email);
         
         // EMERGENCY: Bypass AuthContext and make direct API call
-        const emergencyLoginUrl = 'https://mental-health-companion-nine.vercel.app/api/auth/login';
+        const emergencyLoginUrl = 'https://mental-health-companion-back.vercel.app/api/auth/login';
         console.log('🆘 EMERGENCY LOGIN - Direct API call to:', emergencyLoginUrl);
         
         const response = await fetch(emergencyLoginUrl, {
