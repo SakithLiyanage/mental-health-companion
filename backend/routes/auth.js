@@ -206,7 +206,16 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+    console.error('Error details:', error.message);
+    console.error('MongoDB connection state:', require('mongoose').connection.readyState);
+    console.error('JWT_SECRET configured:', !!process.env.JWT_SECRET);
+    res.status(500).json({ 
+      message: 'Server error during login',
+      ...(process.env.NODE_ENV === 'development' && { 
+        error: error.message,
+        mongoState: require('mongoose').connection.readyState 
+      })
+    });
   }
 });
 

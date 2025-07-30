@@ -54,11 +54,14 @@ app.use('/api/emotions', emotionRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   res.json({ 
     status: 'OK', 
     message: 'Mental Health Companion API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: dbStatus,
+    mongodbUri: process.env.MONGODB_URI ? 'configured' : 'missing'
   });
 });
 
