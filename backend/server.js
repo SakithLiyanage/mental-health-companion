@@ -91,12 +91,17 @@ app.use('/api/goals', goalRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStates = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  
   res.json({ 
     status: 'OK', 
     message: 'Mental Health Companion API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    database: dbStates[dbState] || 'unknown',
+    databaseState: dbState,
+    serverless: !!process.env.VERCEL
   });
 });
 
@@ -311,12 +316,19 @@ if (process.env.VERCEL) {
     try {
       console.log(`📝 Processing ${req.method} ${req.url}`);
       
-      // Attempt database connection with timeout
-      await connectDB();
+      // Try to connect to database, but don't fail if it doesn't work
+      try {
+        await connectDB();
+        console.log('✅ Database connected successfully');
+      } catch (dbError) {
+        console.warn('⚠️ Database connection failed, continuing without DB:', dbError.message);
+        // Continue processing the request even if database fails
+        // This allows the API to function in a degraded mode
+      }
       
       clearTimeout(timeout);
       
-      console.log('✅ Database connected, processing request...');
+      console.log('🚀 Processing request...');
       return app(req, res);
       
     } catch (error) {
@@ -326,7 +338,7 @@ if (process.env.VERCEL) {
         console.error('💥 Serverless handler error:', error.message);
         res.status(503).json({
           success: false,
-          message: 'Service Unavailable: Database connection failed',
+          message: 'Service Unavailable: Server error',
           error: error.message,
           timestamp: new Date().toISOString(),
           environment: 'production'
