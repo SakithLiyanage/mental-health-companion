@@ -255,7 +255,6 @@ const connectDB = async () => {
       socketTimeoutMS: 3000,
       maxPoolSize: 1, // Limit connections for serverless
       bufferCommands: false, // Disable buffering
-      bufferMaxEntries: 0,
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
       w: 'majority'
