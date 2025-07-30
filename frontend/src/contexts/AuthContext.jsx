@@ -4,20 +4,27 @@ import { API_BASE_URL, API_ENDPOINTS } from '../config/api.js';
 
 const AuthContext = createContext();
 
-const API_BASE = API_BASE_URL + '/api';
-console.log('AuthContext API_BASE configured as:', API_BASE);
+// Force explicit URLs instead of relying on axios defaults
+console.log('AuthContext loaded at:', new Date().toISOString());
 console.log('AuthContext API_ENDPOINTS.auth:', API_ENDPOINTS.auth);
-axios.defaults.baseURL = API_BASE;
+
+// Create a fresh axios instance to avoid any global configuration conflicts
+const apiClient = axios.create({
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
 
 // Token management
 const getToken = () => localStorage.getItem('token');
 const setToken = (token) => {
   localStorage.setItem('token', token);
-  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 };
 const removeToken = () => {
   localStorage.removeItem('token');
-  delete axios.defaults.headers.common['Authorization'];
+  delete apiClient.defaults.headers.common['Authorization'];
 };
 
 export const AuthProvider = ({ children }) => {
@@ -32,10 +39,10 @@ export const AuthProvider = ({ children }) => {
       console.log('Stored token:', token ? 'exists' : 'none');
       
       if (token) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           console.log('Validating token...');
-          const response = await axios.get('/auth/me');
+          const response = await apiClient.get(API_ENDPOINTS.auth + '/me');
           console.log('Token validation successful:', response.data);
           setUser(response.data.user);
         } catch (error) {
@@ -55,13 +62,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      console.log('Attempting login to:', API_ENDPOINTS.auth + '/login');
-      const response = await axios.post(API_ENDPOINTS.auth + '/login', { email, password });
+      const loginUrl = API_ENDPOINTS.auth + '/login';
+      console.log('Attempting login to:', loginUrl);
+      const response = await apiClient.post(loginUrl, { email, password });
       const { token, user } = response.data;
       
       setToken(token);
       setUser(user);
     } catch (error) {
+      console.error('Login error details:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -71,10 +80,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      console.log('Attempting registration with data:', userData);
-      console.log('Registering to:', API_ENDPOINTS.auth + '/register');
+      const registerUrl = API_ENDPOINTS.auth + '/register';
+      console.log('Attempting registration to:', registerUrl);
       
-      const response = await axios.post(API_ENDPOINTS.auth + '/register', userData);
+      const response = await apiClient.post(registerUrl, userData);
       console.log('Registration response:', response.data);
       
       const { token, user } = response.data;
