@@ -37,8 +37,6 @@ export const API_ENDPOINTS = {
   
   // Emotions
   emotions: `${FORCED_BACKEND_URL}/api/emotions`,
-  // Emotions
-  emotions: `${FORCED_BACKEND_URL}/api/emotions`,
   emotionsById: (entryId) => `${FORCED_BACKEND_URL}/api/emotions/${entryId}`,
   
   // Dashboard
