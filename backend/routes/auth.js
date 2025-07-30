@@ -165,6 +165,14 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
+  // Explicitly check for JWT_SECRET
+  if (!process.env.JWT_SECRET) {
+    console.error('FATAL ERROR: JWT_SECRET is not defined in the environment variables.');
+    return res.status(500).json({
+      message: 'Server configuration error: JWT secret is missing.'
+    });
+  }
+
   try {
     const { email, password } = req.body;
 

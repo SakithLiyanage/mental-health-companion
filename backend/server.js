@@ -18,17 +18,30 @@ const app = express();
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'https://mental-health-companion-front.vercel.app',
-    'https://mental-health-companion-beige.vercel.app',
-    'https://mental-health-companion-e29c.vercel.app', // Your frontend URL
-    'https://*.vercel.app' // Allow all Vercel deployments
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'https://mental-health-companion-front.vercel.app',
+      'https://mental-health-companion-beige.vercel.app',
+      'https://mental-health-companion-e29c.vercel.app'
+    ];
+    if (!origin || allowedOrigins.includes(origin) || /https:\/\/.*\.vercel\.app/.test(origin)) {
+      callback(null, true);
+    } else {
+      console.error('CORS error: Origin not allowed:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Explicitly handle OPTIONS requests
+app.options('*', cors());
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
