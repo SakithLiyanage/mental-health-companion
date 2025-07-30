@@ -132,45 +132,76 @@ app.use('*', (req, res) => {
 let cachedDb = null;
 
 const connectDB = async () => {
-  if (cachedDb) {
-    console.log('Using cached database instance');
-    return cachedDb;
+  // If mongoose is already connected, return the cached connection
+  if (mongoose.connection.readyState === 1) {
+    console.log('Using existing mongoose connection');
+    return mongoose.connection;
+  }
+
+  // If connection is being established, wait for it
+  if (mongoose.connection.readyState === 2) {
+    console.log('Waiting for mongoose connection to establish...');
+    return new Promise((resolve, reject) => {
+      mongoose.connection.once('connected', () => resolve(mongoose.connection));
+      mongoose.connection.once('error', reject);
+    });
   }
 
   try {
-    console.log('Attempting to create new database connection...');
-    // Redact password for security
-    const redactedUri = process.env.MONGODB_URI?.replace(/:([^:]+)@/, ':********@');
-    console.log('MongoDB URI used for connection:', redactedUri);
-
+    console.log('Creating new MongoDB connection for serverless environment...');
+    
     if (!process.env.MONGODB_URI) {
       console.error('CRITICAL: MONGODB_URI is not defined.');
       throw new Error('MONGODB_URI is not defined in environment variables.');
     }
 
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // Optimized settings for Vercel serverless functions
+    const mongoOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      bufferCommands: false, // Disable buffering to fail fast
-    });
+      serverSelectionTimeoutMS: 3000, // Reduced for faster failures
+      connectTimeoutMS: 3000,
+      socketTimeoutMS: 3000,
+      maxPoolSize: 1, // Limit connections for serverless
+      bufferCommands: false, // Disable buffering
+      bufferMaxEntries: 0,
+      family: 4, // Use IPv4, skip trying IPv6
+      retryWrites: true,
+      w: 'majority'
+    };
 
-    console.log(`✅ New MongoDB Connected: ${conn.connection.host}`);
+    // Redact password for security logging
+    const redactedUri = process.env.MONGODB_URI.replace(/:([^:]+)@/, ':********@');
+    console.log('Connecting to MongoDB with URI:', redactedUri);
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, mongoOptions);
+    
+    console.log(`✅ MongoDB Connected Successfully!`);
+    console.log(`- Host: ${conn.connection.host}`);
+    console.log(`- Database: ${conn.connection.name}`);
+    console.log(`- ReadyState: ${conn.connection.readyState}`);
+    
     cachedDb = conn;
     return conn;
+
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
+    console.error('❌ MongoDB Connection Failed:', error.message);
     
-    if (error.name === 'MongoNetworkError' || error.message.includes('IP') || error.message.includes('whitelist')) {
-      console.error('\n🔥 SOLUTION: Add your IP to MongoDB Atlas whitelist.');
+    // Log specific error types for debugging
+    if (error.name === 'MongoNetworkError') {
+      console.error('🌐 Network Error - Check IP whitelist in MongoDB Atlas');
+    } else if (error.name === 'MongoParseError') {
+      console.error('🔗 Connection String Error - Check MONGODB_URI format');
+    } else if (error.name === 'MongoServerSelectionError') {
+      console.error('🏥 Server Selection Error - Database may be offline or unreachable');
     }
     
-    console.error('\n💡 Other potential fixes:');
-    console.error('- Check your MONGODB_URI in Vercel environment variables.');
-    console.error('- Ensure the database cluster is active and not paused.');
+    console.error('💡 Troubleshooting:');
+    console.error('1. Verify IP whitelist (0.0.0.0/0) in MongoDB Atlas');
+    console.error('2. Check database cluster status (not paused)');
+    console.error('3. Verify MONGODB_URI in Vercel environment variables');
+    console.error('4. Ensure database user has proper permissions');
     
-    // Throw the error to be caught by the serverless handler
     throw error;
   }
 };
@@ -179,16 +210,42 @@ const connectDB = async () => {
 // For Vercel serverless functions
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
+    // Set timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      if (!res.headersSent) {
+        console.error('⏰ Request timeout - sending 503 response');
+        res.status(503).json({
+          success: false,
+          message: 'Service Unavailable: Request timeout',
+          error: 'Database connection timeout in serverless environment'
+        });
+      }
+    }, 8000); // 8 second timeout for Vercel
+
     try {
+      console.log(`📝 Processing ${req.method} ${req.url}`);
+      
+      // Attempt database connection with timeout
       await connectDB();
+      
+      clearTimeout(timeout);
+      
+      console.log('✅ Database connected, processing request...');
       return app(req, res);
+      
     } catch (error) {
-      console.error('Failed to connect to database, sending 503 response.');
-      res.status(503).json({
-        success: false,
-        message: 'Service Unavailable: Could not connect to the database.',
-        error: error.message,
-      });
+      clearTimeout(timeout);
+      
+      if (!res.headersSent) {
+        console.error('💥 Serverless handler error:', error.message);
+        res.status(503).json({
+          success: false,
+          message: 'Service Unavailable: Database connection failed',
+          error: error.message,
+          timestamp: new Date().toISOString(),
+          environment: 'production'
+        });
+      }
     }
   };
 } else {
