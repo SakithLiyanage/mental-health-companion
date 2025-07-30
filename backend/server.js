@@ -126,40 +126,51 @@ app.get('/api/debug/mongo', async (req, res) => {
       });
     }
     
-    // Test connection with aggressive timeout settings
+    // Test connection with simple timeout settings
     const testOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 3000,
-      connectTimeoutMS: 3000,
-      socketTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
       maxPoolSize: 1,
-      bufferCommands: false,
-      family: 4
+      bufferCommands: false
     };
     
-    console.log('Attempting direct MongoDB connection...');
+    console.log('Creating MongoDB connection...');
     const testConnection = await mongoose.createConnection(process.env.MONGODB_URI, testOptions);
     
-    console.log('Connection established, testing database access...');
-    const dbStats = await testConnection.db.stats();
-    const collections = await testConnection.db.listCollections().toArray();
+    console.log('Connection created, checking readyState...');
+    const readyState = testConnection.readyState;
+    
+    let dbInfo = { available: false };
+    if (readyState === 1 && testConnection.db) {
+      console.log('Database is available, getting info...');
+      try {
+        const admin = testConnection.db.admin();
+        const pingResult = await admin.ping();
+        dbInfo = { 
+          available: true, 
+          ping: pingResult,
+          name: testConnection.name
+        };
+      } catch (dbError) {
+        console.log('Database ping failed:', dbError.message);
+        dbInfo = { available: false, error: dbError.message };
+      }
+    }
     
     console.log('Closing test connection...');
     await testConnection.close();
     
     res.json({
       success: true,
-      message: 'MongoDB connection successful from Vercel',
-      host: testConnection.host,
-      database: testConnection.name,
-      collections: collections.length,
-      collectionNames: collections.map(c => c.name),
-      dbStats: {
-        ok: dbStats.ok,
-        collections: dbStats.collections,
-        dataSize: dbStats.dataSize
+      message: 'MongoDB connection test completed',
+      connectionState: {
+        readyState: readyState,
+        states: { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' }
       },
+      host: testConnection.host,
+      database: dbInfo,
       timestamp: new Date().toISOString()
     });
     
@@ -170,7 +181,6 @@ app.get('/api/debug/mongo', async (req, res) => {
       error: error.message,
       errorName: error.name,
       errorCode: error.code,
-      stack: error.stack?.split('\n').slice(0, 3), // First 3 lines of stack
       timestamp: new Date().toISOString()
     });
   }
