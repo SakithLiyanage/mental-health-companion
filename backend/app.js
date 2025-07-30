@@ -20,9 +20,12 @@ app.use(cors({
     'http://localhost:3001',
     'http://localhost:3002',
     'https://mental-health-companion-front.vercel.app',
-    'https://mental-health-companion-nine.vercel.app'
+    'https://mental-health-companion-nine.vercel.app',
+    'https://mental-health-companion-sepia.vercel.app'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parsing middleware

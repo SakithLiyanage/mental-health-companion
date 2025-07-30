@@ -1,5 +1,6 @@
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mental-health-companion-nine.vercel.app';
+// Force the correct backend URL - override any environment variables that might be wrong
+export const API_BASE_URL = 'https://mental-health-companion-nine.vercel.app';
 
 console.log('API_BASE_URL configured as:', API_BASE_URL);
 
