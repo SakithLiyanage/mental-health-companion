@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -168,6 +169,15 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check database connection first
+    if (mongoose.connection.readyState !== 1) {
+      console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please try again later.',
+        dbStatus: 'disconnected'
+      });
+    }
+
     // Validate input
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
@@ -206,7 +216,19 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+    
+    // Provide more specific error information
+    if (error.name === 'MongoNetworkError' || error.name === 'MongooseServerSelectionError') {
+      return res.status(503).json({ 
+        message: 'Database connection error. Please try again later.',
+        dbStatus: 'error'
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

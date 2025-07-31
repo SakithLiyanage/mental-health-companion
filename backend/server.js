@@ -87,6 +87,25 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Database status endpoint
+app.get('/api/db-status', async (req, res) => {
+  const readyStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
+  res.json({
+    readyState: mongoose.connection.readyState,
+    status: readyStates[mongoose.connection.readyState],
+    host: mongoose.connection.host || 'unknown',
+    name: mongoose.connection.name || 'unknown',
+    hasMongoUri: !!process.env.MONGODB_URI,
+    mongoUriStart: process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'Not set'
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
