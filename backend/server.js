@@ -249,21 +249,24 @@ const connectDB = async () => {
       throw new Error('MONGODB_URI is not defined in environment variables.');
     }
 
-    // Optimized settings for Vercel serverless functions
+    // Aggressive serverless settings for Vercel
     const mongoOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000, // Give a bit more time
-      connectTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
-      maxPoolSize: 1, // Limit connections for serverless
+      serverSelectionTimeoutMS: 8000, // Increased for serverless
+      connectTimeoutMS: 8000,
+      socketTimeoutMS: 8000,
+      maxPoolSize: 1, // Single connection for serverless
       minPoolSize: 0, // Allow pool to scale to zero
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+      maxIdleTimeMS: 10000, // Shorter idle time for serverless
       bufferCommands: false, // Disable buffering
+      bufferMaxEntries: 0, // No buffer
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
       w: 'majority',
-      authSource: 'admin' // Explicitly set auth source
+      authSource: 'admin', // Explicit auth source
+      ssl: true, // Ensure SSL
+      sslValidate: true // Validate SSL certificates
     };
 
     // Redact password for security logging
