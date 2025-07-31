@@ -15,6 +15,9 @@ const goalRoutes = require('./routes/goals');
 
 const app = express();
 
+// Trust proxy for Vercel deployment (fixes rate limiting issues)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
@@ -315,14 +318,29 @@ if (process.env.VERCEL) {
     try {
       console.log(`📝 Processing ${req.method} ${req.url}`);
       
-      // Try to connect to database, but don't fail if it doesn't work
+      // Ensure database connection is established before processing requests
       try {
         await connectDB();
         console.log('✅ Database connected successfully');
+        
+        // Verify connection is actually ready
+        if (mongoose.connection.readyState !== 1) {
+          throw new Error('Database connection not ready');
+        }
+        
       } catch (dbError) {
-        console.warn('⚠️ Database connection failed, continuing without DB:', dbError.message);
-        // Continue processing the request even if database fails
-        // This allows the API to function in a degraded mode
+        console.error('❌ Database connection failed:', dbError.message);
+        
+        if (!res.headersSent) {
+          clearTimeout(timeout);
+          return res.status(503).json({
+            success: false,
+            message: 'Service Unavailable: Database connection failed',
+            error: dbError.message,
+            timestamp: new Date().toISOString()
+          });
+        }
+        return;
       }
       
       clearTimeout(timeout);
