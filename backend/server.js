@@ -142,15 +142,34 @@ const connectDB = async () => {
       console.log('Attempting to connect to MongoDB Atlas...');
       console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
       
+      // Validate MongoDB URI format
+      if (!process.env.MONGODB_URI) {
+        throw new Error('MONGODB_URI environment variable is not set');
+      }
+      
+      // Check if URI includes database name
+      const uri = process.env.MONGODB_URI;
+      const hasDbName = uri.includes('.mongodb.net/') && 
+                       uri.split('.mongodb.net/')[1] && 
+                       uri.split('.mongodb.net/')[1].split('?')[0].length > 0;
+      
+      if (!hasDbName) {
+        console.warn('⚠️  WARNING: MongoDB URI might be missing database name');
+        console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
+      }
+      
       const conn = await mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+        serverSelectionTimeoutMS: 10000, // Increased timeout for Vercel
         socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        maxPoolSize: 10, // Maintain up to 10 socket connections
+        bufferCommands: false, // Disable mongoose buffering
+        bufferMaxEntries: 0 // Disable mongoose buffering
       });
       
       console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-      console.log(`📁 Database: ${conn.connection.name}`);
+      console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
     }
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
@@ -160,12 +179,18 @@ const connectDB = async () => {
       console.error('1. Go to https://cloud.mongodb.com');
       console.error('2. Navigate to "Network Access"');
       console.error('3. Click "Add IP Address"');
-      console.error('4. Add your current IP or use 0.0.0.0/0 for development');
+      console.error('4. Add 0.0.0.0/0 for Vercel deployments');
+    }
+    
+    if (error.message.includes('authentication') || error.message.includes('credentials')) {
+      console.error('\n🔐 SOLUTION: Check your MongoDB credentials:');
+      console.error('1. Verify username and password in connection string');
+      console.error('2. Ensure user has proper database permissions');
     }
     
     console.error('\n💡 Other potential fixes:');
     console.error('- Check your MongoDB credentials');
-    console.error('- Verify your connection string');
+    console.error('- Verify your connection string includes database name');
     console.error('- Ensure cluster is running\n');
     
     // Don't exit in serverless environment
