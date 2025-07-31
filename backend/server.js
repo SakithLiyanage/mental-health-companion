@@ -253,14 +253,17 @@ const connectDB = async () => {
     const mongoOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 3000, // Reduced for faster failures
-      connectTimeoutMS: 3000,
-      socketTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 5000, // Give a bit more time
+      connectTimeoutMS: 5000,
+      socketTimeoutMS: 5000,
       maxPoolSize: 1, // Limit connections for serverless
+      minPoolSize: 0, // Allow pool to scale to zero
+      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
       bufferCommands: false, // Disable buffering
       family: 4, // Use IPv4, skip trying IPv6
       retryWrites: true,
-      w: 'majority'
+      w: 'majority',
+      authSource: 'admin' // Explicitly set auth source
     };
 
     // Redact password for security logging
