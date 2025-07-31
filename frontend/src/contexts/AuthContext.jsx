@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api.js';
 
 const AuthContext = createContext(undefined);
 
-// Configure axios defaults
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mental-health-companion-wine.vercel.app/api';
+// Configure axios defaults - use centralized API configuration
 axios.defaults.baseURL = API_BASE_URL;
 
 // Token management
