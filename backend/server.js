@@ -19,7 +19,7 @@ const app = express();
 app.use(helmet());
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
+    process.env.FRONTEND_URL || 'https://mental-health-companion-4o1j.vercel.app',
     'http://localhost:3001',
     'http://localhost:3002',
     'https://mental-health-companion-beige.vercel.app',

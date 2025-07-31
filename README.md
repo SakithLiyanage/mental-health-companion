@@ -79,7 +79,7 @@ PORT=5000
 NODE_ENV=development
 
 # Frontend URL (for CORS)
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=https://mental-health-companion-4o1j.vercel.app
 
 # OpenAI Configuration (for AI chat features)
 OPENAI_API_KEY=your-openai-api-key-here
@@ -103,7 +103,7 @@ REACT_APP_API_URL=https://mental-health-companion-wine.vercel.app/api
 #### Development Mode
 ```bash
 # Start both frontend and backend in development mode
-npm run dev:frontend  # Frontend on http://localhost:3000
+npm run dev:frontend  # Frontend on https://mental-health-companion-4o1j.vercel.app
 npm run dev:backend   # Backend on https://mental-health-companion-wine.vercel.app
 ```
 
@@ -117,7 +117,7 @@ npm start
 ```
 
 ### 5. Access the Application
-- **Frontend**: http://localhost:3000
+- **Frontend**: https://mental-health-companion-4o1j.vercel.app
 - **Backend API**: https://mental-health-companion-wine.vercel.app
 - **Health Check**: https://mental-health-companion-wine.vercel.app/api/health
 

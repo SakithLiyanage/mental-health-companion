@@ -86,7 +86,7 @@ router.post('/', authenticateToken, async (req, res) => {
             headers: {
               'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
               'Content-Type': 'application/json',
-              'HTTP-Referer': 'http://localhost:3000',
+              'HTTP-Referer': 'https://mental-health-companion-4o1j.vercel.app',
               'X-Title': 'Mental Health Companion'
             },
             timeout: 15000
