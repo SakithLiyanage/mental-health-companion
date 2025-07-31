@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoal } from '../../contexts/GoalContext.jsx';
 
@@ -11,21 +11,7 @@ const GoalAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
 
-  useEffect(() => {
-    fetchAnalytics();
-    fetchGoals();
-  }, [timeRange, dailyGoal, lastRefresh]); // Add lastRefresh as dependency
-  
-  // Add an interval to periodically refresh data
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLastRefresh(Date.now());
-    }, 30000); // Refresh every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -46,9 +32,9 @@ const GoalAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
 
-  const fetchGoals = async () => {
+  const fetchGoals = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
@@ -67,7 +53,21 @@ const GoalAnalytics = () => {
     } catch (error) {
       console.error('Error fetching goals:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchAnalytics();
+    fetchGoals();
+  }, [timeRange, dailyGoal, lastRefresh, fetchAnalytics, fetchGoals]); // Add fetchGoals as dependency
+  
+  // Add an interval to periodically refresh data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastRefresh(Date.now());
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Calculate category breakdown from goals data if not available in analytics
   const calculateCategoryBreakdown = (goals) => {

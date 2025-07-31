@@ -97,7 +97,7 @@ const BreathingExercise = () => {
       
       return () => clearInterval(id);
     }
-  }, [isActive, phase]); // Removed count and timerId from dependencies
+  }, [isActive, phase, count, phases, timerId]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-calm-50 via-blue-50 to-purple-50 p-6">
