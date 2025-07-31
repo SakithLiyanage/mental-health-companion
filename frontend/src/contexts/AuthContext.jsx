@@ -4,7 +4,7 @@ import axios from 'axios';
 const AuthContext = createContext(undefined);
 
 // Configure axios defaults
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://mental-health-companion-wine.vercel.app/api';
 axios.defaults.baseURL = API_BASE_URL;
 
 // Token management

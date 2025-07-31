@@ -30,7 +30,7 @@ const GoalAnalytics = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:5000/api/goals/analytics?timeRange=${timeRange}`, {
+      const response = await fetch(`https://mental-health-companion-wine.vercel.app/api/goals/analytics?timeRange=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -53,7 +53,7 @@ const GoalAnalytics = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5000/api/goals', {
+      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/goals', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

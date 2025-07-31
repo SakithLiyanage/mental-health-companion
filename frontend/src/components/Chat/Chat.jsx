@@ -31,7 +31,7 @@ const Chat = () => {
       const token = localStorage.getItem('token');
       console.log('Loading chat history, token:', token ? 'Present' : 'Missing');
       
-      const response = await fetch('http://localhost:5000/api/chat/history?limit=20', {
+      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/chat/history?limit=20', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -117,7 +117,7 @@ const Chat = () => {
       console.log('Sending message to backend:', messageText);
       console.log('Token:', token ? 'Present' : 'Missing');
       
-      const response = await fetch('http://localhost:5000/api/chat', {
+      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

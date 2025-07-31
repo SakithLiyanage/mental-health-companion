@@ -74,7 +74,7 @@ export const GoalProvider = ({ children }) => {
       if (!token) return;
 
       // Find or create a daily goal for this category
-      const response = await fetch('http://localhost:5000/api/goals/update-daily-progress', {
+      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/goals/update-daily-progress', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

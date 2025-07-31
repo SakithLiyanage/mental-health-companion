@@ -67,8 +67,8 @@ const Dashboard = () => {
 
         // Fetch stats and activities in parallel
         const [statsResponse, activitiesResponse] = await Promise.all([
-          fetch('http://localhost:5000/api/dashboard/stats', { headers }),
-          fetch('http://localhost:5000/api/dashboard/activities?limit=4', { headers })
+          fetch('https://mental-health-companion-wine.vercel.app/api/dashboard/stats', { headers }),
+          fetch('https://mental-health-companion-wine.vercel.app/api/dashboard/activities?limit=4', { headers })
         ]);
 
         if (statsResponse.ok) {

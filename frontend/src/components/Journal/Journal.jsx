@@ -59,7 +59,7 @@ const Journal = () => {
 
         // Test the API first
         try {
-          const testResponse = await fetch('http://localhost:5000/api/journal/test', {
+          const testResponse = await fetch('https://mental-health-companion-wine.vercel.app/api/journal/test', {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -76,7 +76,7 @@ const Journal = () => {
           console.log('API test error:', testError);
         }
 
-        const response = await fetch('http://localhost:5000/api/journal', {
+        const response = await fetch('https://mental-health-companion-wine.vercel.app/api/journal', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -216,7 +216,7 @@ const Journal = () => {
 
       console.log('Sending journal entry:', newEntry); // Debug log
 
-      const response = await fetch('http://localhost:5000/api/journal', {
+      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/journal', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -293,7 +293,7 @@ const Journal = () => {
       }
     } catch (error) {
       console.error('Error saving journal entry:', error);
-      alert('Failed to save journal entry. Check if backend server is running on http://localhost:5000');
+      alert('Failed to save journal entry. Check if backend server is running on https://mental-health-companion-wine.vercel.app');
       
       // Save locally as fallback
       const localEntry = {
@@ -338,7 +338,7 @@ const Journal = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/journal/${entryId}`, {
+      const response = await fetch(`https://mental-health-companion-wine.vercel.app/api/journal/${entryId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
