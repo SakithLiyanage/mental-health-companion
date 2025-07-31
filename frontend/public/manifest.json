@@ -1,6 +1,6 @@
 {
   "short_name": "Mental Health Companion",
-  "name": "Mental Health Companion - AI-Powered Wellness",
+  "name": "Mental Health Companion - AI-powered mental health support",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,8 +18,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
-}
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "description": "Your AI-powered mental health companion for journaling, emotion tracking, and wellness support."
+} 

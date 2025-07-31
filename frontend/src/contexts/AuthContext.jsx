@@ -1,31 +1,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_ENDPOINTS } from '../config/api.js'; // Removed unused API_BASE_URL
-import { EMERGENCY_API_ENDPOINTS } from '../config/emergency-api.js';
 
-const AuthContext = createContext();
+const AuthContext = createContext(undefined);
 
-// Force explicit URLs instead of relying on axios defaults
-console.log('AuthContext loaded at:', new Date().toISOString());
-console.log('AuthContext API_ENDPOINTS.auth:', API_ENDPOINTS.auth);
-
-// Create a fresh axios instance to avoid any global configuration conflicts
-const apiClient = axios.create({
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
+// Configure axios defaults
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+axios.defaults.baseURL = API_BASE_URL;
 
 // Token management
 const getToken = () => localStorage.getItem('token');
 const setToken = (token) => {
   localStorage.setItem('token', token);
-  apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 };
 const removeToken = () => {
   localStorage.removeItem('token');
-  delete apiClient.defaults.headers.common['Authorization'];
+  delete axios.defaults.headers.common['Authorization'];
 };
 
 export const AuthProvider = ({ children }) => {
@@ -40,10 +30,10 @@ export const AuthProvider = ({ children }) => {
       console.log('Stored token:', token ? 'exists' : 'none');
       
       if (token) {
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           console.log('Validating token...');
-          const response = await apiClient.get(API_ENDPOINTS.auth + '/me');
+          const response = await axios.get('/auth/me');
           console.log('Token validation successful:', response.data);
           setUser(response.data.user);
         } catch (error) {
@@ -63,32 +53,13 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      // Use emergency endpoints to bypass any configuration issues
-      const loginUrl = EMERGENCY_API_ENDPOINTS.login;
-      console.log('� EMERGENCY LOGIN - Attempting login to:', loginUrl);
-      console.log('� EMERGENCY_API_ENDPOINTS.login:', EMERGENCY_API_ENDPOINTS.login);
-      
-      // Try fetch instead of axios to completely bypass any axios configuration
-      const response = await fetch(loginUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-        throw new Error(errorData.message || 'Login failed');
-      }
-      
-      const { token, user } = await response.json();
+      const response = await axios.post('/auth/login', { email, password });
+      const { token, user } = response.data;
       
       setToken(token);
       setUser(user);
     } catch (error) {
-      console.error('Login error details:', error);
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -97,10 +68,10 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      const registerUrl = API_ENDPOINTS.auth + '/register';
-      console.log('Attempting registration to:', registerUrl);
+      console.log('Attempting registration with data:', userData);
+      console.log('API Base URL:', API_BASE_URL);
       
-      const response = await apiClient.post(registerUrl, userData);
+      const response = await axios.post('/auth/register', userData);
       console.log('Registration response:', response.data);
       
       const { token, user } = response.data;

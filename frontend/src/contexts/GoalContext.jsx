@@ -1,5 +1,4 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { API_ENDPOINTS } from '../config/api.js';
 
 const GoalContext = createContext();
 
@@ -75,7 +74,7 @@ export const GoalProvider = ({ children }) => {
       if (!token) return;
 
       // Find or create a daily goal for this category
-      const response = await fetch(API_ENDPOINTS.goalsAnalytics, {
+      const response = await fetch('http://localhost:5000/api/goals/update-daily-progress', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

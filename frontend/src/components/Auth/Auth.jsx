@@ -9,7 +9,7 @@ const Auth = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
-  const { register } = useAuth(); // Removed unused 'login' import
+  const { login, register } = useAuth();
 
   const [formData, setFormData] = useState({
     email: '',
@@ -189,37 +189,7 @@ const Auth = () => {
     try {
       if (isLogin) {
         console.log('Attempting login with:', formData.email);
-        
-        // EMERGENCY: Bypass AuthContext and make direct API call
-        const emergencyLoginUrl = 'https://mental-health-companion-back.vercel.app/api/auth/login';
-        console.log('🆘 EMERGENCY LOGIN - Direct API call to:', emergencyLoginUrl);
-        
-        const response = await fetch(emergencyLoginUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            email: formData.email, 
-            password: formData.password 
-          }),
-        });
-        
-        if (!response.ok) {
-          console.error('Login failed with status:', response.status);
-          console.error('Response headers:', response.headers);
-          const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
-          console.error('Error data:', errorData);
-          throw new Error(errorData.message || 'Server error during login');
-        }
-        
-        const { token } = await response.json(); // Removed unused 'user' variable
-        
-        // Store token and redirect manually
-        localStorage.setItem('token', token);
-        console.log('Emergency login successful, redirecting...');
-        window.location.href = '/dashboard';
-        
+        await login(formData.email, formData.password);
       } else {
         console.log('Attempting registration with:', formData);
         await register(formData);

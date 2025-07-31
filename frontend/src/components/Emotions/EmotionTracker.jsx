@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useGoal } from '../../contexts/GoalContext.jsx';
-import { API_ENDPOINTS } from '../../config/api.js';
 
 const EmotionTracker = () => {
   const { markEmotionCompleted } = useGoal();
@@ -64,7 +63,7 @@ const EmotionTracker = () => {
       if (!token) return;
 
       // Load emotion data from dedicated emotion API
-      const response = await fetch(`${API_ENDPOINTS.emotions}?limit=100`, {
+      const response = await fetch('http://localhost:5000/api/emotions?limit=100', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -118,7 +117,7 @@ const EmotionTracker = () => {
       const token = localStorage.getItem('token');
       if (token) {
         // Save to dedicated emotion API
-        const response = await fetch(API_ENDPOINTS.emotions, {
+        const response = await fetch('http://localhost:5000/api/emotions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -188,7 +187,7 @@ const EmotionTracker = () => {
       }
       
       // Save to dedicated emotion API
-      const response = await fetch(API_ENDPOINTS.emotions, {
+      const response = await fetch('http://localhost:5000/api/emotions', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -252,7 +251,7 @@ const EmotionTracker = () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await fetch(API_ENDPOINTS.emotionsById(editingEntry.id), {
+        const response = await fetch(`http://localhost:5000/api/emotions/${editingEntry.id}`, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -303,7 +302,7 @@ const EmotionTracker = () => {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await fetch(API_ENDPOINTS.emotionsById(entryId), {
+        const response = await fetch(`http://localhost:5000/api/emotions/${entryId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,

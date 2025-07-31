@@ -25,14 +25,6 @@ const authenticateToken = (req, res, next) => {
 // Register
 router.post('/register', async (req, res) => {
   try {
-    // Check MongoDB connection state first
-    if (require('mongoose').connection.readyState !== 1) {
-      console.error('FATAL ERROR: MongoDB is not connected during registration.');
-      return res.status(500).json({
-        message: 'Server error: Database not connected.'
-      });
-    }
-
     const { email, password, username, firstName, lastName } = req.body;
 
     // Enhanced validation with specific error messages
@@ -173,23 +165,7 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
-  // Explicitly check for JWT_SECRET
-  if (!process.env.JWT_SECRET) {
-    console.error('FATAL ERROR: JWT_SECRET is not defined in the environment variables.');
-    return res.status(500).json({
-      message: 'Server configuration error: JWT secret is missing.'
-    });
-  }
-
   try {
-    // Check MongoDB connection state
-    if (require('mongoose').connection.readyState !== 1) {
-      console.error('FATAL ERROR: MongoDB is not connected.');
-      return res.status(500).json({
-        message: 'Server error: Database not connected.'
-      });
-    }
-
     const { email, password } = req.body;
 
     // Validate input
@@ -230,16 +206,7 @@ router.post('/login', async (req, res) => {
 
   } catch (error) {
     console.error('Login error:', error);
-    console.error('Error details:', error.message);
-    console.error('MongoDB connection state:', require('mongoose').connection.readyState);
-    console.error('JWT_SECRET configured:', !!process.env.JWT_SECRET);
-    res.status(500).json({ 
-      message: 'Server error during login',
-      ...(process.env.NODE_ENV === 'development' && { 
-        error: error.message,
-        mongoState: require('mongoose').connection.readyState 
-      })
-    });
+    res.status(500).json({ message: 'Server error during login' });
   }
 });
 
