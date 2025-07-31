@@ -25,6 +25,14 @@ const authenticateToken = (req, res, next) => {
 // Register
 router.post('/register', async (req, res) => {
   try {
+    // Check MongoDB connection state first
+    if (require('mongoose').connection.readyState !== 1) {
+      console.error('FATAL ERROR: MongoDB is not connected during registration.');
+      return res.status(500).json({
+        message: 'Server error: Database not connected.'
+      });
+    }
+
     const { email, password, username, firstName, lastName } = req.body;
 
     // Enhanced validation with specific error messages
