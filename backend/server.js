@@ -78,6 +78,39 @@ app.get('/api/test', (req, res) => {
   });
 });
 
+// Database connection test endpoint
+app.get('/api/test-db', async (req, res) => {
+  try {
+    console.log('Testing database connection...');
+    
+    if (mongoose.connection.readyState === 1) {
+      return res.json({
+        message: 'Database is already connected',
+        readyState: mongoose.connection.readyState,
+        host: mongoose.connection.host,
+        database: mongoose.connection.name
+      });
+    }
+    
+    // Try to connect
+    await connectDB();
+    
+    res.json({
+      message: 'Database connection successful',
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host,
+      database: mongoose.connection.name
+    });
+  } catch (error) {
+    console.error('Database test failed:', error.message);
+    res.status(500).json({
+      message: 'Database connection failed',
+      error: error.message,
+      readyState: mongoose.connection.readyState
+    });
+  }
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatLimiter, chatRoutes);
@@ -172,7 +205,7 @@ app.use('*', (req, res) => {
   });
 });
 
-// MongoDB connection
+// MongoDB connection with better serverless support
 const connectDB = async () => {
   try {
     // Check if already connected
@@ -206,16 +239,18 @@ const connectDB = async () => {
       console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
     }
     
-    // For serverless environments, use different connection options
+    // For serverless environments, use minimal connection options
     const connectionOptions = {
-      serverSelectionTimeoutMS: 20000, // Increased timeout for Vercel
-      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      maxPoolSize: 5, // Smaller pool for serverless
+      serverSelectionTimeoutMS: 10000, // Shorter timeout for serverless
+      socketTimeoutMS: 30000, // Shorter socket timeout
+      maxPoolSize: 1, // Single connection for serverless
       bufferCommands: false, // Disable mongoose buffering
-      connectTimeoutMS: 20000, // Connection timeout
-      heartbeatFrequencyMS: 10000, // Heartbeat frequency
+      connectTimeoutMS: 10000, // Shorter connection timeout
       retryWrites: true,
-      w: 'majority'
+      w: 'majority',
+      // Disable features that don't work well in serverless
+      autoIndex: false,
+      autoCreate: false
     };
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, connectionOptions);
