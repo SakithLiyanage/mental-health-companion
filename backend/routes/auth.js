@@ -33,17 +33,6 @@ router.post('/test', (req, res) => {
   });
 });
 
-// Mock registration endpoint for testing without database
-router.post('/register-mock', (req, res) => {
-  res.json({
-    message: 'Mock registration successful (no database required)',
-    timestamp: new Date().toISOString(),
-    body: req.body,
-    environment: process.env.NODE_ENV || 'development',
-    vercel_env: !!process.env.VERCEL
-  });
-});
-
 // Register
 router.post('/register', async (req, res) => {
   try {
@@ -226,9 +215,7 @@ router.post('/login', async (req, res) => {
       console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
       return res.status(503).json({ 
         message: 'Database connection unavailable. Please try again later.',
-        dbStatus: 'disconnected',
-        readyState: mongoose.connection.readyState,
-        mongodb_uri_set: !!process.env.MONGODB_URI
+        dbStatus: 'disconnected'
       });
     }
 
