@@ -33,39 +33,29 @@ router.post('/test', (req, res) => {
   });
 });
 
+// Mock registration endpoint for testing without database
+router.post('/register-mock', (req, res) => {
+  res.json({
+    message: 'Mock registration successful (no database required)',
+    timestamp: new Date().toISOString(),
+    body: req.body,
+    environment: process.env.NODE_ENV || 'development',
+    vercel_env: !!process.env.VERCEL
+  });
+});
+
 // Register
 router.post('/register', async (req, res) => {
   try {
     // Check database connection first
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
-      
-      // Try to connect if not already connected
-      try {
-        console.log('Attempting to connect to database for registration...');
-        const mongoose = require('mongoose');
-        await mongoose.connect(process.env.MONGODB_URI, {
-          serverSelectionTimeoutMS: 10000,
-          socketTimeoutMS: 30000,
-          maxPoolSize: 1,
-          bufferCommands: false,
-          connectTimeoutMS: 10000,
-          retryWrites: true,
-          w: 'majority',
-          autoIndex: false,
-          autoCreate: false
-        });
-        console.log('Database connected successfully for registration');
-      } catch (connectError) {
-        console.error('Failed to connect to database for registration:', connectError);
-        return res.status(503).json({ 
-          message: 'Database connection unavailable. Please try again later.',
-          dbStatus: 'disconnected',
-          readyState: mongoose.connection.readyState,
-          mongodb_uri_set: !!process.env.MONGODB_URI,
-          error: connectError.message
-        });
-      }
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please try again later.',
+        dbStatus: 'disconnected',
+        readyState: mongoose.connection.readyState,
+        mongodb_uri_set: !!process.env.MONGODB_URI
+      });
     }
 
     const { email, password, username, firstName, lastName } = req.body;
@@ -234,33 +224,12 @@ router.post('/login', async (req, res) => {
     // Check database connection first
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
-      
-      // Try to connect if not already connected
-      try {
-        console.log('Attempting to connect to database for login...');
-        const mongoose = require('mongoose');
-        await mongoose.connect(process.env.MONGODB_URI, {
-          serverSelectionTimeoutMS: 10000,
-          socketTimeoutMS: 30000,
-          maxPoolSize: 1,
-          bufferCommands: false,
-          connectTimeoutMS: 10000,
-          retryWrites: true,
-          w: 'majority',
-          autoIndex: false,
-          autoCreate: false
-        });
-        console.log('Database connected successfully for login');
-      } catch (connectError) {
-        console.error('Failed to connect to database for login:', connectError);
-        return res.status(503).json({ 
-          message: 'Database connection unavailable. Please try again later.',
-          dbStatus: 'disconnected',
-          readyState: mongoose.connection.readyState,
-          mongodb_uri_set: !!process.env.MONGODB_URI,
-          error: connectError.message
-        });
-      }
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please try again later.',
+        dbStatus: 'disconnected',
+        readyState: mongoose.connection.readyState,
+        mongodb_uri_set: !!process.env.MONGODB_URI
+      });
     }
 
     // Validate input

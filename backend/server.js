@@ -84,7 +84,21 @@ app.get('/api/test', (req, res) => {
 app.get('/api/ping', (req, res) => {
   res.json({
     message: 'pong',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    vercel: !!process.env.VERCEL
+  });
+});
+
+// Test endpoint that doesn't require database
+app.get('/api/test-simple', (req, res) => {
+  res.json({
+    message: 'API is working without database',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb_uri_set: !!process.env.MONGODB_URI,
+    vercel_env: !!process.env.VERCEL,
+    node_env: process.env.NODE_ENV
   });
 });
 
@@ -251,39 +265,17 @@ const connectDB = async () => {
       throw new Error('MONGODB_URI environment variable is not set');
     }
     
-    // Check if URI includes database name
-    const uri = process.env.MONGODB_URI;
-    const hasDbName = uri.includes('.mongodb.net/') && 
-                     uri.split('.mongodb.net/')[1] && 
-                     uri.split('.mongodb.net/')[1].split('?')[0].length > 0;
-    
-    if (!hasDbName) {
-      console.warn('⚠️  WARNING: MongoDB URI might be missing database name');
-      console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
-    }
-    
     // For serverless environments, use minimal connection options
     const connectionOptions = {
-      serverSelectionTimeoutMS: 15000, // Increased timeout for serverless
-      socketTimeoutMS: 45000, // Increased socket timeout
-      maxPoolSize: 1, // Single connection for serverless
-      minPoolSize: 0, // Allow no connections when idle
-      bufferCommands: false, // Disable mongoose buffering
-      connectTimeoutMS: 15000, // Increased connection timeout
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 30000,
+      maxPoolSize: 1,
+      bufferCommands: false,
+      connectTimeoutMS: 10000,
       retryWrites: true,
       w: 'majority',
-      // Disable features that don't work well in serverless
       autoIndex: false,
-      autoCreate: false,
-      // Add heartbeat frequency for better connection monitoring
-      heartbeatFrequencyMS: 10000,
-      // Add retry logic
-      retryReads: true,
-      // Add write concern
-      writeConcern: {
-        w: 'majority',
-        j: true
-      }
+      autoCreate: false
     };
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, connectionOptions);
@@ -292,42 +284,10 @@ const connectDB = async () => {
     console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
     console.log(`🔗 Connection State: ${mongoose.connection.readyState}`);
     
-    // Set up connection event listeners
-    mongoose.connection.on('error', (err) => {
-      console.error('MongoDB connection error:', err);
-    });
-    
-    mongoose.connection.on('disconnected', () => {
-      console.log('MongoDB disconnected');
-    });
-    
-    mongoose.connection.on('reconnected', () => {
-      console.log('MongoDB reconnected');
-    });
-    
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     console.error('Error code:', error.code);
     console.error('Error name:', error.name);
-    
-    if (error.message.includes('IP') || error.message.includes('whitelist')) {
-      console.error('\n🔥 SOLUTION: Add your IP to MongoDB Atlas whitelist:');
-      console.error('1. Go to https://cloud.mongodb.com');
-      console.error('2. Navigate to "Network Access"');
-      console.error('3. Click "Add IP Address"');
-      console.error('4. Add 0.0.0.0/0 for Vercel deployments');
-    }
-    
-    if (error.message.includes('authentication') || error.message.includes('credentials')) {
-      console.error('\n🔐 SOLUTION: Check your MongoDB credentials:');
-      console.error('1. Verify username and password in connection string');
-      console.error('2. Ensure user has proper database permissions');
-    }
-    
-    console.error('\n💡 Other potential fixes:');
-    console.error('- Check your MongoDB credentials');
-    console.error('- Verify your connection string includes database name');
-    console.error('- Ensure cluster is running\n');
     
     // Don't exit in serverless environment
     if (process.env.NODE_ENV !== 'production') {
@@ -343,17 +303,8 @@ const connectDB = async () => {
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
     try {
-      // Force database connection for each request in serverless
-      if (mongoose.connection.readyState !== 1) {
-        console.log('Attempting database connection for serverless function...');
-        try {
-          await connectDB();
-        } catch (dbError) {
-          console.error('Database connection failed in serverless function:', dbError);
-          // Don't fail the entire request if DB connection fails
-          // Let individual routes handle DB connection issues
-        }
-      }
+      // Don't force database connection on every request
+      // Let individual routes handle their own database connections
       return app(req, res);
     } catch (error) {
       console.error('Serverless function error:', error);
