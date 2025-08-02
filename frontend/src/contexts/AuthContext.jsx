@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../config/api.js';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api.js';
 
 const AuthContext = createContext(undefined);
 
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           console.log('Validating token...');
-          const response = await axios.get('/auth/me');
+          const response = await axios.get(API_ENDPOINTS.authProfile);
           console.log('Token validation successful:', response.data);
           setUser(response.data.user);
         } catch (error) {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      const response = await axios.post('/auth/login', { email, password });
+      const response = await axios.post(`${API_ENDPOINTS.auth}/login`, { email, password });
       const { token, user } = response.data;
       
       setToken(token);
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Attempting registration with data:', userData);
       console.log('API Base URL:', API_BASE_URL);
       
-      const response = await axios.post('/auth/register', userData);
+      const response = await axios.post(`${API_ENDPOINTS.auth}/register`, userData);
       console.log('Registration response:', response.data);
       
       const { token, user } = response.data;
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateUser = async (userData) => {
     try {
-      const response = await axios.patch('/auth/preferences', userData);
+      const response = await axios.patch(`${API_ENDPOINTS.authProfile}`, userData);
       setUser(response.data.user);
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Update failed');
