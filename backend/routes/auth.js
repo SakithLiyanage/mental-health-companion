@@ -26,6 +26,16 @@ const authenticateToken = (req, res, next) => {
 // Register
 router.post('/register', async (req, res) => {
   try {
+    // Check database connection first
+    if (mongoose.connection.readyState !== 1) {
+      console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
+      return res.status(503).json({ 
+        message: 'Database connection unavailable. Please try again later.',
+        dbStatus: 'disconnected',
+        readyState: mongoose.connection.readyState
+      });
+    }
+
     const { email, password, username, firstName, lastName } = req.body;
 
     // Enhanced validation with specific error messages
@@ -160,7 +170,27 @@ router.post('/register', async (req, res) => {
 
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+    
+    // Provide more specific error information
+    if (error.name === 'MongoNetworkError' || error.name === 'MongooseServerSelectionError') {
+      return res.status(503).json({ 
+        message: 'Database connection error. Please try again later.',
+        dbStatus: 'error',
+        error: error.message
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error during registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

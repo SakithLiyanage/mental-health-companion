@@ -77,12 +77,25 @@ app.use('/api/goals', goalRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const readyStates = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+  
   res.json({ 
     status: 'OK', 
     message: 'Mental Health Companion API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    database: {
+      status: readyStates[mongoose.connection.readyState] || 'unknown',
+      readyState: mongoose.connection.readyState,
+      host: mongoose.connection.host || 'not connected',
+      name: mongoose.connection.name || 'not connected'
+    },
+    mongodb_uri_set: !!process.env.MONGODB_URI
   });
 });
 
@@ -199,8 +212,16 @@ const connectDB = async () => {
 // For Vercel serverless functions
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
-    await connectDB();
-    return app(req, res);
+    try {
+      await connectDB();
+      return app(req, res);
+    } catch (error) {
+      console.error('Serverless function error:', error);
+      return res.status(500).json({ 
+        message: 'Server initialization error',
+        error: error.message 
+      });
+    }
   };
 } else {
   // Start server for local development
