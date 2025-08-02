@@ -39,12 +39,33 @@ router.post('/register', async (req, res) => {
     // Check database connection first
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
-      return res.status(503).json({ 
-        message: 'Database connection unavailable. Please try again later.',
-        dbStatus: 'disconnected',
-        readyState: mongoose.connection.readyState,
-        mongodb_uri_set: !!process.env.MONGODB_URI
-      });
+      
+      // Try to connect if not already connected
+      try {
+        console.log('Attempting to connect to database for registration...');
+        const mongoose = require('mongoose');
+        await mongoose.connect(process.env.MONGODB_URI, {
+          serverSelectionTimeoutMS: 10000,
+          socketTimeoutMS: 30000,
+          maxPoolSize: 1,
+          bufferCommands: false,
+          connectTimeoutMS: 10000,
+          retryWrites: true,
+          w: 'majority',
+          autoIndex: false,
+          autoCreate: false
+        });
+        console.log('Database connected successfully for registration');
+      } catch (connectError) {
+        console.error('Failed to connect to database for registration:', connectError);
+        return res.status(503).json({ 
+          message: 'Database connection unavailable. Please try again later.',
+          dbStatus: 'disconnected',
+          readyState: mongoose.connection.readyState,
+          mongodb_uri_set: !!process.env.MONGODB_URI,
+          error: connectError.message
+        });
+      }
     }
 
     const { email, password, username, firstName, lastName } = req.body;
@@ -213,10 +234,33 @@ router.post('/login', async (req, res) => {
     // Check database connection first
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected. ReadyState:', mongoose.connection.readyState);
-      return res.status(503).json({ 
-        message: 'Database connection unavailable. Please try again later.',
-        dbStatus: 'disconnected'
-      });
+      
+      // Try to connect if not already connected
+      try {
+        console.log('Attempting to connect to database for login...');
+        const mongoose = require('mongoose');
+        await mongoose.connect(process.env.MONGODB_URI, {
+          serverSelectionTimeoutMS: 10000,
+          socketTimeoutMS: 30000,
+          maxPoolSize: 1,
+          bufferCommands: false,
+          connectTimeoutMS: 10000,
+          retryWrites: true,
+          w: 'majority',
+          autoIndex: false,
+          autoCreate: false
+        });
+        console.log('Database connected successfully for login');
+      } catch (connectError) {
+        console.error('Failed to connect to database for login:', connectError);
+        return res.status(503).json({ 
+          message: 'Database connection unavailable. Please try again later.',
+          dbStatus: 'disconnected',
+          readyState: mongoose.connection.readyState,
+          mongodb_uri_set: !!process.env.MONGODB_URI,
+          error: connectError.message
+        });
+      }
     }
 
     // Validate input

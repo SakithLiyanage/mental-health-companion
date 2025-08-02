@@ -74,7 +74,17 @@ app.get('/api/test', (req, res) => {
     message: 'API is working without database',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    mongodb_uri_set: !!process.env.MONGODB_URI
+    mongodb_uri_set: !!process.env.MONGODB_URI,
+    vercel_env: !!process.env.VERCEL,
+    node_env: process.env.NODE_ENV
+  });
+});
+
+// Simple ping endpoint
+app.get('/api/ping', (req, res) => {
+  res.json({
+    message: 'pong',
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -83,23 +93,36 @@ app.get('/api/test-db', async (req, res) => {
   try {
     console.log('Testing database connection...');
     
+    const connectionInfo = {
+      readyState: mongoose.connection.readyState,
+      readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown',
+      host: mongoose.connection.host || 'not connected',
+      database: mongoose.connection.name || 'not connected',
+      mongodb_uri_set: !!process.env.MONGODB_URI,
+      mongodb_uri_length: process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0,
+      environment: process.env.NODE_ENV || 'development',
+      vercel_env: !!process.env.VERCEL
+    };
+    
     if (mongoose.connection.readyState === 1) {
       return res.json({
         message: 'Database is already connected',
-        readyState: mongoose.connection.readyState,
-        host: mongoose.connection.host,
-        database: mongoose.connection.name
+        ...connectionInfo
       });
     }
     
     // Try to connect
+    console.log('Attempting to connect to database...');
     await connectDB();
     
-    res.json({
+        res.json({
       message: 'Database connection successful',
+      ...connectionInfo,
       readyState: mongoose.connection.readyState,
+      readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown',
       host: mongoose.connection.host,
       database: mongoose.connection.name
+    });
     });
   } catch (error) {
     console.error('Database test failed:', error.message);
@@ -241,16 +264,26 @@ const connectDB = async () => {
     
     // For serverless environments, use minimal connection options
     const connectionOptions = {
-      serverSelectionTimeoutMS: 10000, // Shorter timeout for serverless
-      socketTimeoutMS: 30000, // Shorter socket timeout
+      serverSelectionTimeoutMS: 15000, // Increased timeout for serverless
+      socketTimeoutMS: 45000, // Increased socket timeout
       maxPoolSize: 1, // Single connection for serverless
+      minPoolSize: 0, // Allow no connections when idle
       bufferCommands: false, // Disable mongoose buffering
-      connectTimeoutMS: 10000, // Shorter connection timeout
+      connectTimeoutMS: 15000, // Increased connection timeout
       retryWrites: true,
       w: 'majority',
       // Disable features that don't work well in serverless
       autoIndex: false,
-      autoCreate: false
+      autoCreate: false,
+      // Add heartbeat frequency for better connection monitoring
+      heartbeatFrequencyMS: 10000,
+      // Add retry logic
+      retryReads: true,
+      // Add write concern
+      writeConcern: {
+        w: 'majority',
+        j: true
+      }
     };
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, connectionOptions);
@@ -258,6 +291,20 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
     console.log(`🔗 Connection State: ${mongoose.connection.readyState}`);
+    
+    // Set up connection event listeners
+    mongoose.connection.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB disconnected');
+    });
+    
+    mongoose.connection.on('reconnected', () => {
+      console.log('MongoDB reconnected');
+    });
+    
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     console.error('Error code:', error.code);
@@ -299,7 +346,13 @@ if (process.env.VERCEL) {
       // Force database connection for each request in serverless
       if (mongoose.connection.readyState !== 1) {
         console.log('Attempting database connection for serverless function...');
-        await connectDB();
+        try {
+          await connectDB();
+        } catch (dbError) {
+          console.error('Database connection failed in serverless function:', dbError);
+          // Don't fail the entire request if DB connection fails
+          // Let individual routes handle DB connection issues
+        }
       }
       return app(req, res);
     } catch (error) {
