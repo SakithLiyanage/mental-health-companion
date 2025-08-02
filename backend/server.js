@@ -57,6 +57,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
+      debug: '/api/debug',
       auth: '/api/auth/*',
       chat: '/api/chat/*',
       journal: '/api/journal/*',
@@ -64,6 +65,16 @@ app.get('/', (req, res) => {
       dashboard: '/api/dashboard/*',
       goals: '/api/goals/*'
     }
+  });
+});
+
+// Simple test endpoint that doesn't require database
+app.get('/api/test', (req, res) => {
+  res.json({
+    message: 'API is working without database',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb_uri_set: !!process.env.MONGODB_URI
   });
 });
 
@@ -195,17 +206,27 @@ const connectDB = async () => {
       console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
     }
     
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 15000, // Increased timeout for Vercel
+    // For serverless environments, use different connection options
+    const connectionOptions = {
+      serverSelectionTimeoutMS: 20000, // Increased timeout for Vercel
       socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      bufferCommands: false // Disable mongoose buffering
-    });
+      maxPoolSize: 5, // Smaller pool for serverless
+      bufferCommands: false, // Disable mongoose buffering
+      connectTimeoutMS: 20000, // Connection timeout
+      heartbeatFrequencyMS: 10000, // Heartbeat frequency
+      retryWrites: true,
+      w: 'majority'
+    };
+    
+    const conn = await mongoose.connect(process.env.MONGODB_URI, connectionOptions);
     
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
     console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
+    console.log(`🔗 Connection State: ${mongoose.connection.readyState}`);
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error name:', error.name);
     
     if (error.message.includes('IP') || error.message.includes('whitelist')) {
       console.error('\n🔥 SOLUTION: Add your IP to MongoDB Atlas whitelist:');
@@ -230,6 +251,9 @@ const connectDB = async () => {
     if (process.env.NODE_ENV !== 'production') {
       process.exit(1);
     }
+    
+    // Re-throw the error so it can be handled by the calling function
+    throw error;
   }
 };
 
@@ -237,11 +261,11 @@ const connectDB = async () => {
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
     try {
-      // Try to connect to database, but don't fail if it doesn't work
-      await connectDB().catch(err => {
-        console.error('Database connection failed:', err.message);
-        // Continue without database for now
-      });
+      // Force database connection for each request in serverless
+      if (mongoose.connection.readyState !== 1) {
+        console.log('Attempting database connection for serverless function...');
+        await connectDB();
+      }
       return app(req, res);
     } catch (error) {
       console.error('Serverless function error:', error);
