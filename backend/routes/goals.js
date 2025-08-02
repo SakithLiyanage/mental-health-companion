@@ -681,7 +681,7 @@ Keep the response warm, personal, and under 150 words. Use emojis sparingly and 
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.YOUR_SITE_URL || 'https://mental-health-companion-4o1j.vercel.app',
+        'HTTP-Referer': process.env.YOUR_SITE_URL || 'https://mental-health-companion-seven.vercel.app/',
         'X-Title': process.env.YOUR_SITE_NAME || 'Mental Health Companion'
       },
       body: JSON.stringify({
