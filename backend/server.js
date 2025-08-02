@@ -129,14 +129,13 @@ app.get('/api/test-db', async (req, res) => {
     console.log('Attempting to connect to database...');
     await connectDB();
     
-        res.json({
+    res.json({
       message: 'Database connection successful',
       ...connectionInfo,
       readyState: mongoose.connection.readyState,
       readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown',
       host: mongoose.connection.host,
       database: mongoose.connection.name
-    });
     });
   } catch (error) {
     console.error('Database test failed:', error.message);
