@@ -2,7 +2,7 @@
 const axios = require('axios');
 
 async function testBackend() {
-  const backendUrl = 'https://mental-health-companion-wine.vercel.app';
+  const backendUrl = 'https://mental-health-companion-backend-eight.vercel.app/';
   
   console.log('Testing backend health...');
   console.log('Backend URL:', backendUrl);

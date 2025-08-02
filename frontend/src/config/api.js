@@ -1,7 +1,7 @@
 // API Configuration
 // CRITICAL: Force the correct backend URL - completely ignore any environment variables
 // The frontend deployment might have REACT_APP_API_URL set to the wrong backend
-const FORCED_BACKEND_URL = 'https://mental-health-companion-wine.vercel.app';
+const FORCED_BACKEND_URL = 'https://mental-health-companion-backend-eight.vercel.app/';
 export const API_BASE_URL = FORCED_BACKEND_URL + '/api';
 
 console.log('=== API CONFIGURATION DEBUG ===');

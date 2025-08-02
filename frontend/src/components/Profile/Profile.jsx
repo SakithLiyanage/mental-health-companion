@@ -39,7 +39,7 @@ const Profile = () => {
         if (!token) return;
 
         // Load journal stats
-        const journalResponse = await fetch('https://mental-health-companion-wine.vercel.app/api/journal/stats/overview', {
+        const journalResponse = await fetch('https://mental-health-companion-backend-eight.vercel.app//api/journal/stats/overview', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -163,7 +163,7 @@ const Profile = () => {
       };
 
       // Update user profile on backend
-      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/auth/profile', {
+      const response = await fetch('https://mental-health-companion-backend-eight.vercel.app//api/auth/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

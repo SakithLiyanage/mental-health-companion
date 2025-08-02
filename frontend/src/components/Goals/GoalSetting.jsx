@@ -62,7 +62,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/goals', {
+      const response = await fetch('https://mental-health-companion-backend-eight.vercel.app//api/goals', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -103,7 +103,7 @@ const GoalSetting = () => {
         }
       };
 
-      const response = await fetch('https://mental-health-companion-wine.vercel.app/api/goals', {
+      const response = await fetch('https://mental-health-companion-backend-eight.vercel.app//api/goals', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -135,7 +135,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch(`https://mental-health-companion-wine.vercel.app/api/goals/${goalId}/log`, {
+      const response = await fetch(`https://mental-health-companion-backend-eight.vercel.app//api/goals/${goalId}/log`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -170,7 +170,7 @@ const GoalSetting = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`https://mental-health-companion-wine.vercel.app/api/goals/${goalId}/checkin`, {
+      const response = await fetch(`https://mental-health-companion-backend-eight.vercel.app//api/goals/${goalId}/checkin`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -203,7 +203,7 @@ const GoalSetting = () => {
         return;
       }
 
-      const response = await fetch(`https://mental-health-companion-wine.vercel.app/api/goals/${goalId}`, {
+      const response = await fetch(`https://mental-health-companion-backend-eight.vercel.app//api/goals/${goalId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

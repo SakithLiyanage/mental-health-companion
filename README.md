@@ -95,7 +95,7 @@ cp env.example .env
 2. Edit `.env` with your configuration:
 ```env
 # API Configuration
-REACT_APP_API_URL=https://mental-health-companion-wine.vercel.app/api
+REACT_APP_API_URL=https://mental-health-companion-backend-eight.vercel.app//api
 ```
 
 ### 4. Start the Application
@@ -104,7 +104,7 @@ REACT_APP_API_URL=https://mental-health-companion-wine.vercel.app/api
 ```bash
 # Start both frontend and backend in development mode
 npm run dev:frontend  # Frontend on https://mental-health-companion-4o1j.vercel.app
-npm run dev:backend   # Backend on https://mental-health-companion-wine.vercel.app
+npm run dev:backend   # Backend on https://mental-health-companion-backend-eight.vercel.app/
 ```
 
 #### Production Mode
@@ -118,8 +118,8 @@ npm start
 
 ### 5. Access the Application
 - **Frontend**: https://mental-health-companion-4o1j.vercel.app
-- **Backend API**: https://mental-health-companion-wine.vercel.app
-- **Health Check**: https://mental-health-companion-wine.vercel.app/api/health
+- **Backend API**: https://mental-health-companion-backend-eight.vercel.app/
+- **Health Check**: https://mental-health-companion-backend-eight.vercel.app//api/health
 
 ## Project Structure 📁
 
