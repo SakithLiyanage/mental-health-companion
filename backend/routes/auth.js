@@ -23,6 +23,16 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+// Test endpoint to check if API is working
+router.post('/test', (req, res) => {
+  res.json({
+    message: 'API is working',
+    timestamp: new Date().toISOString(),
+    body: req.body,
+    headers: req.headers
+  });
+});
+
 // Register
 router.post('/register', async (req, res) => {
   try {
@@ -32,7 +42,8 @@ router.post('/register', async (req, res) => {
       return res.status(503).json({ 
         message: 'Database connection unavailable. Please try again later.',
         dbStatus: 'disconnected',
-        readyState: mongoose.connection.readyState
+        readyState: mongoose.connection.readyState,
+        mongodb_uri_set: !!process.env.MONGODB_URI
       });
     }
 

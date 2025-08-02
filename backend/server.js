@@ -95,7 +95,22 @@ app.get('/api/health', (req, res) => {
       host: mongoose.connection.host || 'not connected',
       name: mongoose.connection.name || 'not connected'
     },
-    mongodb_uri_set: !!process.env.MONGODB_URI
+    mongodb_uri_set: !!process.env.MONGODB_URI,
+    mongodb_uri_length: process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0,
+    vercel_env: !!process.env.VERCEL
+  });
+});
+
+// Debug environment variables endpoint
+app.get('/api/debug', (req, res) => {
+  res.json({
+    node_env: process.env.NODE_ENV,
+    vercel: !!process.env.VERCEL,
+    mongodb_uri_set: !!process.env.MONGODB_URI,
+    mongodb_uri_length: process.env.MONGODB_URI ? process.env.MONGODB_URI.length : 0,
+    jwt_secret_set: !!process.env.JWT_SECRET,
+    frontend_url_set: !!process.env.FRONTEND_URL,
+    timestamp: new Date().toISOString()
   });
 });
 
@@ -149,37 +164,46 @@ app.use('*', (req, res) => {
 // MongoDB connection
 const connectDB = async () => {
   try {
-    // Only connect if not already connected
-    if (mongoose.connection.readyState === 0) {
-      console.log('Attempting to connect to MongoDB Atlas...');
-      console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
-      
-      // Validate MongoDB URI format
-      if (!process.env.MONGODB_URI) {
-        throw new Error('MONGODB_URI environment variable is not set');
-      }
-      
-      // Check if URI includes database name
-      const uri = process.env.MONGODB_URI;
-      const hasDbName = uri.includes('.mongodb.net/') && 
-                       uri.split('.mongodb.net/')[1] && 
-                       uri.split('.mongodb.net/')[1].split('?')[0].length > 0;
-      
-      if (!hasDbName) {
-        console.warn('⚠️  WARNING: MongoDB URI might be missing database name');
-        console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
-      }
-      
-      const conn = await mongoose.connect(process.env.MONGODB_URI, {
-        serverSelectionTimeoutMS: 10000, // Increased timeout for Vercel
-        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-        maxPoolSize: 10, // Maintain up to 10 socket connections
-        bufferCommands: false // Disable mongoose buffering
-      });
-      
-      console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-      console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
+    // Check if already connected
+    if (mongoose.connection.readyState === 1) {
+      console.log('✅ Already connected to MongoDB');
+      return;
     }
+    
+    // Check if connecting
+    if (mongoose.connection.readyState === 2) {
+      console.log('⏳ Already connecting to MongoDB...');
+      return;
+    }
+    
+    console.log('Attempting to connect to MongoDB Atlas...');
+    console.log('MongoDB URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
+    
+    // Validate MongoDB URI format
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+    
+    // Check if URI includes database name
+    const uri = process.env.MONGODB_URI;
+    const hasDbName = uri.includes('.mongodb.net/') && 
+                     uri.split('.mongodb.net/')[1] && 
+                     uri.split('.mongodb.net/')[1].split('?')[0].length > 0;
+    
+    if (!hasDbName) {
+      console.warn('⚠️  WARNING: MongoDB URI might be missing database name');
+      console.warn('Expected format: mongodb+srv://user:pass@cluster.mongodb.net/DATABASE_NAME?options');
+    }
+    
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 15000, // Increased timeout for Vercel
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      bufferCommands: false // Disable mongoose buffering
+    });
+    
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`📁 Database: ${conn.connection.name || 'No database specified'}`);
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     
@@ -213,7 +237,11 @@ const connectDB = async () => {
 if (process.env.VERCEL) {
   module.exports = async (req, res) => {
     try {
-      await connectDB();
+      // Try to connect to database, but don't fail if it doesn't work
+      await connectDB().catch(err => {
+        console.error('Database connection failed:', err.message);
+        // Continue without database for now
+      });
       return app(req, res);
     } catch (error) {
       console.error('Serverless function error:', error);
